@@ -1,0 +1,190 @@
+# PokeSal — Regras e decisões do projeto
+
+## 1. Seleção do Pokésal
+
+O treinador deve escolher **apenas um** dos seguintes Pokésals iniciais:
+
+- BulbaSal
+- CharSal
+- SquirtSal
+- ChikoSal
+- CyndaSal
+- TotoSal
+
+Cada Pokésal possui os seguintes atributos:
+
+| Atributo | Significado |
+|---|---|
+| HP | Vida |
+| ATK | Ataque |
+| DEF | Defesa |
+| SPD | Velocidade |
+| Tipo elemental | Fogo, Água ou Planta |
+
+## 2. Vantagens e desvantagens elementais
+
+Os multiplicadores alteram o dano conforme a relação entre os tipos:
+
+| Tipo de quem ataca ↓ / Tipo de quem recebe → | Fogo | Água | Planta |
+|---|---:|---:|---:|
+| **Fogo** | ×1 | ×0,5 | ×2,0 |
+| **Água** | ×2,0 | ×1 | ×0,5 |
+| **Planta** | ×0,5 | ×2,0 | ×1 |
+
+| Multiplicador | Efeito |
+|---|---|
+| ×2,0 | Dobra o dano. |
+| ×1 | Mantém o dano, sem vantagem ou desvantagem elemental. |
+| ×0,5 | Reduz o dano pela metade. |
+
+Ataques entre tipos iguais utilizam o multiplicador **×1**.
+
+## 3. Efeitos dos terrenos
+
+| Terreno | Efeito |
+|---|---|
+| **Asfalto quente** | Aumenta em 15% o dano dos golpes de Fogo. |
+| **Poça de chuva / piso escorregadio** | Concede 10% adicionais de precisão ou dano aos golpes de Água. |
+| **Canteiro central** | Pokésals de Planta recuperam 5% do HP máximo ao final de cada turno. |
+
+**Pendências:**
+
+- Definir a forma de escolha do terreno.
+- Definir se o bônus da poça de chuva será aplicado à precisão ou ao dano.
+
+## 4. Ordem de ataque e efeitos de status
+
+### 4.1. Ordem de ataque
+
+- O Pokésal com maior **SPD** ataca primeiro.
+- Em caso de empate, a ordem é determinada por **sorteio**.
+
+### 4.2. Efeitos de status
+
+Os status são provocados por habilidades do adversário, e seus efeitos são aplicados **ao final do turno**.
+
+| Status | Funcionamento |
+|---|---|
+| **Queimadura** | Reduz HP e ATK. Não é acumulativa. |
+| **Veneno** | Acumula a cada aplicação de um ataque com efeito de veneno, aumentando progressivamente o dano até o fim do combate. |
+| **Paralisia** | Reduz SPD após a aplicação de um ataque com efeito de paralisia. |
+
+### 4.3. Definições pendentes dos status
+
+| Status | O que falta definir |
+|---|---|
+| **Queimadura** | Confirmar se a duração será de dois turnos; definir o dano e a redução de ATK. |
+| **Veneno** | Definir o dano inicial e o aumento por aplicação. |
+| **Paralisia** | Definir a redução de SPD e a duração. |
+
+Também precisam ser definidos os detalhes de reaplicação e a remoção ou permanência dos status entre batalhas.
+
+## 5. Uso e efeitos dos itens
+
+### 5.1. Regras de utilização
+
+- Cada treinador pode utilizar **no máximo dois itens por batalha**.
+- O limite é total, independentemente do tipo de item escolhido.
+- Usar um item **consome o turno do treinador**.
+- Cada uso retira **uma unidade** do estoque.
+
+### 5.2. Efeitos dos itens
+
+| Item | Efeito |
+|---|---|
+| **Potion** | Recupera uma quantidade de HP ainda a definir. |
+| **Super Potion** | Recupera uma quantidade de HP ainda a definir e remove os efeitos negativos aplicados. |
+| **Antidote** | Remove os efeitos negativos aplicados. |
+
+## 6. Requisito autoral 1 — Gerenciamento da mochila
+
+A mochila armazena os itens disponíveis para o jogador durante sua tentativa de concluir a torre.
+
+### 6.1. Estoque inicial
+
+| Item | Quantidade inicial |
+|---|---:|
+| Potion | 1 |
+| Antidote | 1 |
+| Super Potion | 0 |
+| **Total** | **2** |
+
+### 6.2. Regras de armazenamento
+
+| Regra | Descrição |
+|---|---|
+| **Capacidade máxima** | Quatro itens no total, somando todos os tipos. |
+| **Acúmulo** | Os itens restantes são mantidos entre as batalhas da mesma tentativa. |
+| **Consumo** | Cada uso remove uma unidade do item utilizado. |
+| **Reinício** | Em caso de derrota, a mochila retorna ao estoque inicial. |
+
+> A capacidade de quatro itens não altera o limite de dois usos por batalha.
+
+## 7. Requisito autoral 2 — Recompensa por vitória e recuperação
+
+### 7.1. Recompensa por vitória
+
+Após cada vitória, o jogador recebe **um item aleatório**, desde que exista espaço na mochila.
+
+| Item recebido | Probabilidade |
+|---|---:|
+| Potion | 45% |
+| Antidote | 45% |
+| Super Potion | 10% |
+| **Total** | **100%** |
+
+Se a mochila já contiver **quatro itens**, o jogador não recebe o item de recompensa daquela batalha.
+
+### 7.2. Recuperação de vida
+
+O HP do Pokésal retorna ao máximo **ao final de cada batalha**.
+
+Em caso de derrota, essa recuperação ocorre como parte do reinício do jogo.
+
+## 8. Requisito autoral 3 — Torre de adversários e sistema de derrota
+
+### 8.1. Estrutura da torre
+
+| Característica | Definição |
+|---|---|
+| **Quantidade inicial de estádios** | Um estádio. |
+| **Quantidade de adversários** | Cinco, enfrentados em sequência. |
+| **Controle dos adversários** | Todos são controlados pela CPU. |
+| **Chefe final** | O quinto adversário é o chefe da torre e dono do estádio. |
+| **Conclusão da torre** | O jogador deve derrotar o quinto adversário. |
+
+### 8.2. Progressão por vitória
+
+1. O jogador começa enfrentando o primeiro adversário.
+2. Ao vencer, recebe os benefícios previstos no sistema de recompensa e recuperação.
+3. Avança para o próximo adversário.
+4. Ao derrotar o quinto adversário, conclui a torre.
+
+### 8.3. Reinício por derrota
+
+Ao perder qualquer batalha, a tentativa é encerrada e o jogo reinicia.
+
+| Elemento | Situação após a derrota |
+|---|---|
+| **Progresso na torre** | É zerado. |
+| **Adversário** | O jogador retorna ao primeiro adversário. |
+| **HP do Pokésal** | É restaurado ao máximo. |
+| **Itens acumulados** | São perdidos. |
+| **Mochila** | Volta a conter uma Potion e um Antidote. |
+
+### 8.4. Limite do escopo
+
+A captura de outros Pokésals **não faz parte do projeto**.
+
+## 9. Pontos que ainda precisam ser definidos
+
+- [ ] Valores iniciais de HP, ATK, DEF e SPD dos Pokésals.
+- [ ] Habilidades disponíveis.
+- [ ] Fórmula de cálculo de dano.
+- [ ] Forma de escolha do terreno.
+- [ ] Aplicação do bônus da poça de chuva: precisão ou dano.
+- [ ] Valores, duração e detalhes de reaplicação dos status.
+- [ ] Quantidades de HP recuperadas por Potion e Super Potion.
+- [ ] Remoção ou permanência dos status entre batalhas.
+- [ ] Pokésals e atributos dos cinco adversários.
+- [ ] Regras de decisão da CPU durante o combate.
