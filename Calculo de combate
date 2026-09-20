@@ -1,0 +1,103 @@
+private static final double BONUS_ASFALTO_QUENTE = 1.15;
+private static final double MULTIPLICADOR_NEUTRO = 1.0;
+private static final double VANTAGEM_ELEMENTAL = 2.0;
+private static final double DESVANTAGEM_ELEMENTAL = 0.5;
+
+private static final double PODER_GOLPE_PLANTA = 15.0;
+private static final double ESCALA_ATAQUE = 0.5;
+private static final double ESCALA_DEFESA = 100.0;
+
+private static double terrenoAsfaltoQuente(String tipoGolpe) {
+  if ("Fogo".equals(tipoGolpe)) {
+    return BONUS_ASFALTO_QUENTE;
+  }
+
+  return MULTIPLICADOR_NEUTRO;
+}
+
+private static double verificarTipagem(String tipoGolpe, String tipoDefensor) {
+  switch (tipoGolpe) {
+    case "Planta":
+      switch (tipoDefensor) {
+        case "Planta":
+          return MULTIPLICADOR_NEUTRO;
+        case "Fogo":
+          return DESVANTAGEM_ELEMENTAL;
+        case "Agua":
+          return VANTAGEM_ELEMENTAL;
+        default:
+          throw new IllegalArgumentException("Tipo defensor inválido.");
+      }
+
+    case "Fogo":
+      switch (tipoDefensor) {
+        case "Fogo":
+          return MULTIPLICADOR_NEUTRO;
+        case "Agua":
+          return DESVANTAGEM_ELEMENTAL;
+        case "Planta":
+          return VANTAGEM_ELEMENTAL;
+        default:
+          throw new IllegalArgumentException("Tipo defensor inválido.");
+      }
+
+    case "Agua":
+      switch (tipoDefensor) {
+        case "Agua":
+          return MULTIPLICADOR_NEUTRO;
+        case "Planta":
+          return DESVANTAGEM_ELEMENTAL;
+        case "Fogo":
+          return VANTAGEM_ELEMENTAL;
+        default:
+          throw new IllegalArgumentException("Tipo defensor inválido.");
+      }
+
+    default:
+      throw new IllegalArgumentException("Tipo do golpe inválido.");
+  }
+}
+
+/**
+ * Aplica um golpe de Planta, considerando defesa, tipagem e asfalto quente.
+ *
+ * @param jogador Pokésal que realiza o ataque
+ * @param inimigo Pokésal que recebe o ataque
+ * @param asfaltoQuenteAtivo indica se o terreno atual é asfalto quente
+ */
+
+public static void baterPlanta(
+    Pokesal jogador, Pokesal inimigo, boolean asfaltoQuenteAtivo) {
+
+  String tipoGolpe = "Planta";
+  double resistenciaInimiga = inimigo.getDefesa();
+
+  if (resistenciaInimiga < 0) {
+    throw new IllegalArgumentException("A defesa não pode ser negativa.");
+  }
+
+  double danoBase = PODER_GOLPE_PLANTA + jogador.getAtk() * ESCALA_ATAQUE;
+
+  double danoAposDefesa =
+      danoBase * (ESCALA_DEFESA / (ESCALA_DEFESA + resistenciaInimiga));
+
+  double multiplicadorTipagem =
+      verificarTipagem(tipoGolpe, inimigo.getTipoele());
+
+  double multiplicadorTerreno = MULTIPLICADOR_NEUTRO;
+
+  if (asfaltoQuenteAtivo) {
+    multiplicadorTerreno = terrenoAsfaltoQuente(tipoGolpe);
+  }
+
+  int danoFinal = (int) Math.round(
+      danoAposDefesa * multiplicadorTipagem * multiplicadorTerreno);
+
+  danoFinal = Math.max(0, danoFinal);
+  inimigo.setHp(Math.max(0, inimigo.getHp() - danoFinal));
+
+  System.out.println("Dano após defesa: " + danoAposDefesa);
+  System.out.println("Multiplicador do terreno: " + multiplicadorTerreno);
+  System.out.println("Dano causado: " + danoFinal);
+  System.out.println("HP restante do inimigo: " + inimigo.getHp());
+}
