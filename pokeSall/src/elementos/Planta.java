@@ -1,18 +1,11 @@
 package elementos;
 
-public abstract class Planta{
-	
-	Tipos tipo = Tipos.PLANTA;
-	Tipos vantagem = Tipos.AGUA;
-	Tipos desvantagem = Tipos.FOGO;
-	
-	
-	public abstract double folhaBuzzer();
-	public abstract double recuperar();
-	
-}
-	
+import pokeSall.Elemento;
 
-for(PokeSall pokeSall: fafasdf) {
-	fafasdf.folhaBuzzer();
+public class Planta extends Elemento{
+	
+	public Planta(){
+		super(Tipos.PLANTA, Tipos.AGUA, Tipos.FOGO);
+	}
 }
+	
