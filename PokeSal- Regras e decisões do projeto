@@ -25,11 +25,11 @@ Cada Pokésal possui os seguintes atributos:
 
 Os multiplicadores alteram o dano conforme a relação entre os tipos:
 
-| Tipo de quem ataca ↓ / Tipo de quem recebe → | Fogo | Água | Planta |
-|---|---:|---:|---:|
-| **Fogo** | ×1 | ×0,5 | ×2,0 |
-| **Água** | ×2,0 | ×1 | ×0,5 |
-| **Planta** | ×0,5 | ×2,0 | ×1 |
+| Tipo de quem ataca ↓ / Tipo de quem recebe →| Fogo | Água | Planta |
+                                               |---|---:|---:|---:|
+                                    | **Fogo** | ×1 | ×0,5 | ×2,0 |
+                                    | **Água** | ×2,0 | ×1 | ×0,5 |
+                                  | **Planta** | ×0,5 | ×2,0 | ×1 |
 
 | Multiplicador | Efeito |
 |---|---|
