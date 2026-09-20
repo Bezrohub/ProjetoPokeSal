@@ -1,0 +1,6 @@
+double danoBase = 15 + (jogador.getAtk() / 2.0);
+
+double resistenciaInimiga = inimigo.getDefesa();
+double danoAposDefesa = danoBase * (100.0 / (100.0 + resistenciaInimiga));
+
+int danoFinal = (int) Math.round(danoAposDefesa);
