@@ -1,6 +1,52 @@
-double danoBase = 15 + (jogador.getAtk() / 2.0);
+public static double verificarTipagem(Pokesal jogador, Pokesal inimigo) {
+    String tipoJogador = jogador.getTipoele();
+    String tipoInimigo = inimigo.getTipoele();
 
-double resistenciaInimiga = inimigo.getDefesa();
-double danoAposDefesa = danoBase * (100.0 / (100.0 + resistenciaInimiga));
+    if (tipoJogador.equals(tipoInimigo)) {
+        return 1.0;
+    }
 
-int danoFinal = (int) Math.round(danoAposDefesa);
+    if (tipoJogador.equals("Planta")) {
+        if (tipoInimigo.equals("Fogo")) {
+            return 0.5;
+        }
+        if (tipoInimigo.equals("Agua")) {
+            return 2.0;
+        }
+    }
+
+    if (tipoJogador.equals("Fogo")) {
+        if (tipoInimigo.equals("Agua")) {
+            return 0.5;
+        }
+        if (tipoInimigo.equals("Planta")) {
+            return 2.0;
+        }
+    }
+
+    if (tipoJogador.equals("Agua")) {
+        if (tipoInimigo.equals("Fogo")) {
+            return 2.0;
+        }
+        if (tipoInimigo.equals("Planta")) {
+            return 0.5;
+        }
+    }
+
+    throw new IllegalArgumentException("Tipo elemental inválido.");
+}
+
+public static void habilidadeTeste(Pokesal jogador, Pokesal inimigo) {
+    double danoBase = 15 + (jogador.getAtk() / 2.0);
+    double resistenciaInimiga = inimigo.getDefesa();
+
+    double danoAposDefesa =
+            danoBase * (100.0 / (100.0 + resistenciaInimiga));
+
+    System.out.println("Dano após defesa: " + danoAposDefesa);
+
+    double multiplicador = verificarTipagem(jogador, inimigo);
+    int danoFinal = (int) Math.round(danoAposDefesa * multiplicador);
+
+    inimigo.setHp(Math.max(0, inimigo.getHp() - danoFinal));
+}
