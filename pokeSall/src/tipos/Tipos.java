@@ -1,4 +1,4 @@
-package elementos;
+package tipos;
 
 public enum Tipos {
 	PLANTA,

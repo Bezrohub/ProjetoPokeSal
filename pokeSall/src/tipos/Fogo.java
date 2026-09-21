@@ -1,4 +1,4 @@
-package elementos;
+package tipos;
 
 public class Fogo {
 
