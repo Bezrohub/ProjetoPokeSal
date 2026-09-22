@@ -10,4 +10,10 @@ public abstract class Treinador {
 		this.pokeSall = pokeSall;
 		this.mochila = mochila;
 	}
+
+	public Treinador(String nome, PokeSall pokeSall){
+		this.nome = nome;
+		this.pokeSall = pokeSall;
+		this.mochila = new Mochila();
+	}
 }

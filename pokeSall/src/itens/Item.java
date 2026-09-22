@@ -7,8 +7,5 @@ public abstract class Item {
 	public Item(String nome, String descricao) {
 		this.nome = nome;
 		this.descricao = descricao;
-	}
-
-	public abstract void consumir();
-
+}
 }
