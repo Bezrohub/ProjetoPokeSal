@@ -1,7 +1,7 @@
-package tipos;
+package pokeSall;
 
 public enum Tipos {
-	PLANTA,
+    PLANTA,
 	FOGO,
 	AGUA
 }

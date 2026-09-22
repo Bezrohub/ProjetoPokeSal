@@ -1,11 +1,12 @@
 package pokeSalls;
 
 import pokeSall.PokeSall;
+import pokeSall.Tipos;
 
 public class BubaSall extends PokeSall {
 
 	public BubaSall() {
-		super(200, 80, 70, 60, "Planta");
+		super(200, 80, 70, 60, Tipos.PLANTA);
 	}
 	
 	public double folhaBeam() {
@@ -13,6 +14,6 @@ public class BubaSall extends PokeSall {
 	}
 	
 	public double recuperar() {
-		this.HP = 
+		return 1;
 	}
 }

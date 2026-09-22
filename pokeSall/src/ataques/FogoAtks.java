@@ -8,6 +8,6 @@ public class FogoAtks {
     }
 
     public double queimar(double HP){
-        return 
+        return 30;
     }
 }
