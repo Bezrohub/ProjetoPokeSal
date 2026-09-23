@@ -6,6 +6,6 @@ import pokeSall.Tipos;
 public class ChikoSall extends PokeSall{
     
     public ChikoSall(){
-		super(200, 80, 70, 60, Tipos.PLANTA);
+		super("ChikoSal",200, 80, 70, 60, Tipos.PLANTA);
     }
 }

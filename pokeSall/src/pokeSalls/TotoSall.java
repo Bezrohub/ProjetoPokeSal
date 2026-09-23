@@ -6,6 +6,6 @@ import pokeSall.Tipos;
 public class TotoSall extends PokeSall{
 
     public TotoSall(){
-        super(200, 80, 70, 60, Tipos.AGUA);
+        super("TotoSal", 200, 80, 70, 60, Tipos.AGUA);
     }
 }

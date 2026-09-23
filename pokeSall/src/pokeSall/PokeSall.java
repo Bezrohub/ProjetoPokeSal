@@ -4,6 +4,7 @@ import ataques.Habilidades;
 
 public abstract class PokeSall {
 
+	private String Nome;
 	private double HP;
 	private int DEF;
 	private int SPD;
@@ -12,7 +13,8 @@ public abstract class PokeSall {
 	private Status Stat = Status.NORMAL;
 	private Habilidades[] habilidades = new Habilidades[2];
 
-	public PokeSall(double HP, int DEF, int SPD, double ATK, Tipos Tipo) {
+	public PokeSall(String nome, double HP, int DEF, int SPD, double ATK, Tipos Tipo) {
+		this.Nome = nome; 
 		this.HP = HP;
 		this.DEF = DEF;
 		this.SPD = SPD;
@@ -57,5 +59,8 @@ public abstract class PokeSall {
 	}
 	public Tipos getTipo(){
 		return this.Tipo;
+	}
+	public String getNome(){
+		return Nome;
 	}
 }
