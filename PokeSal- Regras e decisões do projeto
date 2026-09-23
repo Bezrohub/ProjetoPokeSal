@@ -175,16 +175,3 @@ Ao perder qualquer batalha, a tentativa é encerrada e o jogo reinicia.
 ### 8.4. Limite do escopo
 
 A captura de outros Pokésals **não faz parte do projeto**.
-
-## 9. Pontos que ainda precisam ser definidos
-
-- [ ] Valores iniciais de HP, ATK, DEF e SPD dos Pokésals.
-- [ ] Habilidades disponíveis.
-- [ ] Fórmula de cálculo de dano.
-- [ ] Forma de escolha do terreno.
-- [ ] Aplicação do bônus da poça de chuva: precisão ou dano.
-- [ ] Valores, duração e detalhes de reaplicação dos status.
-- [ ] Quantidades de HP recuperadas por Potion e Super Potion.
-- [ ] Remoção ou permanência dos status entre batalhas.
-- [ ] Pokésals e atributos dos cinco adversários.
-- [ ] Regras de decisão da CPU durante o combate.
