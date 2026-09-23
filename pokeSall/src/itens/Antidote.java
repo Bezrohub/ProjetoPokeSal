@@ -5,7 +5,7 @@ import pokeSall.Status;
 
 public class Antidote extends Item{
     
-    public Antidote(){
+  public Antidote(){
         super("Antidote", "Retira todos os efeitos negativos");
     }
 

@@ -1,6 +1,5 @@
 package main;
 import java.util.Scanner;
-
 import pokeSall.Game;
 import pokeSall.Jogador;
 import pokeSall.PokeSall;
@@ -8,8 +7,8 @@ import pokeSall.Treinador;
 import pokeSalls.BulbaSall;
 import pokeSalls.CharSall;
 import pokeSalls.SquirtSall;
-
 import java.util.List;
+
 public class Main {
     public static void main(String[] args){
         Scanner ler = new Scanner(System.in);

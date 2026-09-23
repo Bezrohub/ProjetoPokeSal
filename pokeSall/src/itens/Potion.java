@@ -4,7 +4,7 @@ import pokeSall.PokeSall;
 
 public class Potion extends Item{
 
-    public Potion(){
+  public Potion(){
         super("Potion", "Cura 30% do HP");
     }
 }

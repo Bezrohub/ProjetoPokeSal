@@ -4,8 +4,9 @@ import ataques.Habilidades;
 
 public abstract class PokeSall {
 
-	private String Nome;
+	private String nome;
 	private double HP;
+	private final double HPbase;
 	private int DEF;
 	private int SPD;
 	private double ATK;
@@ -14,7 +15,8 @@ public abstract class PokeSall {
 	private Habilidades[] habilidades = new Habilidades[2];
 
 	public PokeSall(String nome, double HP, int DEF, int SPD, double ATK, Tipos Tipo) {
-		this.Nome = nome; 
+		this.HPbase = HP;
+		this.nome = nome; 
 		this.HP = HP;
 		this.DEF = DEF;
 		this.SPD = SPD;
@@ -24,7 +26,10 @@ public abstract class PokeSall {
 	public void addHabilidades(int indice, Habilidades habilidade){
 		habilidades[indice] = habilidade;
 	}
- 
+	
+	public Habilidades[] getHabilidades() {
+		return this.habilidades;
+	}
 	public void setHabilidades(Habilidades[] habilidades){
 		this.habilidades = habilidades;
 	}
@@ -61,6 +66,9 @@ public abstract class PokeSall {
 		return this.Tipo;
 	}
 	public String getNome(){
-		return Nome;
+		return this.nome;
+	}
+	public double getHPbase() {
+		return this.HPbase;
 	}
 }
