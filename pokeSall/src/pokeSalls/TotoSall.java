@@ -1,11 +1,20 @@
-package pokeSalls;
+package pokesalls;
 
-import pokeSall.PokeSall;
-import pokeSall.Tipos;
+import pokesall.PokeSall;
+import pokesall.Tipos;
 
-public class TotoSall extends PokeSall{
+/**
+ * Declaração da classe TotoSall, que herda da classe PokeSall.
+ */
 
-  public TotoSall(){
-        super("TotoSal", 200, 80, 70, 60, Tipos.AGUA);
-    }
+public class TotoSall extends PokeSall {
+
+  /**
+   * Construtor da classe, chama o construtor da super classe e adiciona duas habilidades ao vetor
+   * de habilidades do PokeSal.
+   */
+
+  public TotoSall() {
+    super("TotoSal", 200, 80, 70, 60, Tipos.AGUA);
+  }
 }
