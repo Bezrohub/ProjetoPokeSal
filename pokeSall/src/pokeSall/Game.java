@@ -1,856 +1,662 @@
-
-package pokeSall;
-
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
+package pokesall;
 
 import ataques.Habilidades;
 import itens.Item;
-import pokeSalls.BulbaSall;
-import pokeSalls.CharSall;
-import pokeSalls.SquirtSall;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
+import pokesalls.BulbaSall;
+import pokesalls.CharSall;
+import pokesalls.SquirtSall;
 
 /**
- * Classe principal que gerencia o fluxo do jogo PokeSall.
- * Controla as batalhas, turnos, mecânicas de terreno e uso de itens.
+ * Classe que gerencia todo o fluxo do jogo.
  */
 public class Game {
 
-    /**
-     * Enumeração dos terrenos possíveis durante uma batalha.
-     */
-    private enum TERRENOS {
-        ASFALTO_QUENTE,
-        POCA_DE_CHUVA,
-        CANTEIRO_CENTRAL
-    }
-
-    private static final double ESCALA_DEFESA = 100;
-
-    private final Random rand = new Random();
-    private final Scanner ler = new Scanner(System.in);
-
-    private int acumuloVenenoJ;
-    private int acumuloVenenoI;
-    private int turnosVeneno;
-    private int turnosFogoJ;
-    private int turnosFogoI;
-    private int nivelTorre;
-    private int turno;
-
-    private double dano;
-    private double vida;
-    private double cura;
-    private int acao;
-
-    private final String[] recompensas = {
-        "Potion",
-        "Potion",
-        "SuperPotion",
-        "SuperPotion",
-        "Antidote"
-    };
-
-    private final ArrayList<Treinador> inimigos = new ArrayList<>();
-    private final ArrayList<Treinador> players = new ArrayList<>();
-
-    private PokeSall pokeSall;
-    private Treinador jogador;
-    private Treinador npc;
-    private TERRENOS terreno;
-
-    /**
-     * Construtor do jogo.
-     *
-     * @param jogador treinador principal controlado pelo usuário
-     */
-  public Game(Treinador jogador) {
-        this.jogador = jogador;
-        criarInimigos();
+  enum Terrenos {
+    ASFALTO_QUENTE, POCA_DE_CHUVA, CANTEIRO_CENTRAL
   }
 
-    /**
-     * Inicializa a lista de inimigos da torre
-     * com seus respectivos PokeSalls.
-     */
-    public void criarInimigos() {
-        pokeSall = new CharSall();
-        npc = new Npc("Ashley", pokeSall);
-        inimigos.add(npc);
+  private Random rand = new Random();
+  private Scanner ler = new Scanner(System.in);
+  // Todos com J no final é o jogador, todos com I é o inimigo.
+  private int acumuloVenenoJ;
+  private int acumuloVenenoI;
+  private int turnosVeneno;
+  private int turnosParalizadoJ;
+  private int turnosParalizadoI;
+  private int turnosFogoJ;
+  private int turnosFogoI;
+  private int nivelTorre = 0;
+  private int turno = 0;
+  private double dano;
+  private double vida;
+  private double cura;
+  private int acao = 0;
+  private static final double escalaDefesa = 100;
+  private Terrenos terrenoAtual; // Variável para guardar o terreno da partida
 
-        pokeSall = new BulbaSall();
-        npc = new Npc("Joe Lois", pokeSall);
-        inimigos.add(npc);
+  ArrayList<Treinador> inimigos = new ArrayList<Treinador>();
+  ArrayList<Treinador> players = new ArrayList<Treinador>();
+  PokeSall pokeSall;
+  Treinador jogador;
+  Treinador npc;
+  Treinador inimigoAtual;
 
-        pokeSall = new SquirtSall();
-        npc = new Npc("Mary", pokeSall);
-        inimigos.add(npc);
-    }
+  /**
+   * Construtor da classe game, que recebe um jogador como parametro.
+   *
+   * @param jogador, objeto do tipo Treinador.
+   */
+  public Game(Treinador jogador) {
+    this.jogador = jogador;
+    criarInimigos();
+  }
 
-    /**
-     * Método principal que roda o loop de batalhas da torre.
-     */
-    public void rodarGame() {
-        int tempTerreno;
-        boolean rodando = true;
+  /**
+   * Método que criar todos os adversários iniciais.
+   */
+  public void criarInimigos() {
+    pokeSall = new CharSall();
+    npc = new Npc("Ashley", pokeSall);
+    inimigos.add(npc);
 
-        while (rodando && nivelTorre < inimigos.size()) {
-            Treinador inimigoAtual = inimigos.get(nivelTorre);
+    pokeSall = new BulbaSall();
+    npc = new Npc("Joe Lois", pokeSall);
+    inimigos.add(npc);
 
-            players.clear();
-            players.add(jogador);
-            players.add(inimigoAtual);
+    pokeSall = new SquirtSall();
+    npc = new Npc("Mary", pokeSall);
+    inimigos.add(npc);
+  }
 
-            turno = 0;
-            boolean batalhando = true;
+  /**
+   * Método responsável por gerenciar todo o fluxo do jogo, chamando outros métodos e encerrando o
+   * jogo.
+   */
 
-            System.out.println("==============================");
-            System.out.println("Você está no nível " + (nivelTorre + 1));
-            System.out.println("Enfrentará " + inimigoAtual.getNome() + "!");
-            System.out.println("==============================");
-            System.out.println();
-            System.out.println("PRESSIONE ENTER PARA CONTINUAR!");
+  public void rodarGame() {
+    String opcao;
+    boolean rodando = true;
+    int quantidadePotBatalha;
+    boolean acao = true;
+    ;
+    // Prioridade 1 é o jogador, prioridade 2 é o bot.
+    int prioridade;
+    while (rodando && nivelTorre < inimigos.size()) {
+      inimigoAtual = inimigos.get(nivelTorre);
 
-            ler.nextLine();
-            limparTela();
+      // Prepara a lista de players apenas para a batalha atual
+      players.clear();
+      players.add(jogador);
+      players.add(inimigoAtual);
+      // Define um terreno aleatório para a batalha
+      terrenoAtual = Terrenos.values()[rand.nextInt(Terrenos.values().length)];
 
-            tempTerreno = rand.nextInt(0, 3);
+      turno = 0;
 
-            if (tempTerreno == 0) {
-                terreno = TERRENOS.ASFALTO_QUENTE;
-            } else if (tempTerreno == 1) {
-                terreno = TERRENOS.POCA_DE_CHUVA;
-            } else {
-                terreno = TERRENOS.CANTEIRO_CENTRAL;
-            }
+      System.out.println("==============================");
+      System.out.println("Você está no nível " + (nivelTorre + 1));
+      System.out.println("Enfrentará " + inimigoAtual.getNome() + "!");
+      System.out.println("Terreno da Batalha: " + terrenoAtual.name());
+      System.out.println("==============================");
+      System.out.println();
+      System.out.println("PRESSIONE ENTER PARA CONTINUAR!");
+      ler.nextLine();
+      limparTela();
+      System.out.println("------------------------------");
+      System.out.println("      BATALHA INICIADA!");
+      System.out.println("------------------------------");
 
-            System.out.println("------------------------------");
-            System.out.println("      BATALHA INICIADA!");
-            System.out.println("Terreno atual: " + terreno);
-            System.out.println("------------------------------");
+      // Comparação de velocidade base dos pokeSals.
+      if (jogador.getPokeSall().getSpd() < inimigoAtual.getPokeSall().getSpd()) {
+        System.out.println("O pokeSal " + inimigoAtual.getNomePokeSall() + " é mais rápido!");
+        System.out.println("Ele começa!");
+        prioridade = 2;
 
-            while (batalhando) {
-                turno++;
+      } else if (jogador.getPokeSall().getSpd() > inimigoAtual.getPokeSall().getSpd()) {
+        System.out.println("O seu pokeSal é mais rápido!");
+        System.out.println("Você começa!");
+        prioridade = 1;
 
-                int resultado = verificarVitoria(jogador, inimigoAtual);
+        // Caso a a velocidade for a mesma, sorteira o pokeSal que vai primeiro.
+      } else {
 
-                if (resultado != 0) {
-                    batalhando = false;
+        int temp = rand.nextInt(2);
+        if (temp == 1) {
+          prioridade = 1;
 
-                    if (resultado == 1) {
-                        nivelTorre++;
-                    }
-
-                    if (resultado == 2) {
-                        rodando = false;
-                    }
-
-                    break;
-                }
-
-                System.out.println();
-                System.out.println("------");
-                System.out.println("TURNO " + turno);
-                System.out.println("------");
-                System.out.println();
-
-                if (jogador.getPokeSall().getSPD()
-                        > inimigos.get(nivelTorre).getPokeSall().getSPD()) {
-
-                    System.out.println(
-                            "O " + jogador.getPokeSall().getNome() + " começa!");
-
-                    if (!turnoJogador(inimigoAtual)) {
-                        batalhando = false;
-                        rodando = false;
-                        break;
-                    }
-
-                    if (inimigoAtual.getPokeSall().getHP() > 0) {
-                        turnoInimigo(inimigoAtual, batalhando, rodando);
-                    }
-
-                } else {
-                    System.out.println(
-                            "O " + inimigoAtual.getPokeSall().getNome() + " começa!");
-
-                    turnoInimigo(inimigoAtual, batalhando, rodando);
-
-                    if (jogador.getPokeSall().getHP() > 0) {
-                        if (!turnoJogador(inimigoAtual)) {
-                            batalhando = false;
-                            rodando = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (nivelTorre >= inimigos.size()
-                        && jogador.getPokeSall().getHP() > 0) {
-                    System.out.println(
-                            "Parabéns! Você derrotou todos os inimigos da torre!");
-                }
-
-                verificarStatus(players);
-                aplicarEfeitosTerreno(players);
-            }
+        } else {
+          prioridade = 2;
         }
-    }
+      }
+      boolean batalhando = true;
+      quantidadePotBatalha = 0;
+      while (batalhando) {
+        turno++;
 
-    /**
-     * Gerencia o turno do jogador, exibindo o menu
-     * e realizando a ação escolhida.
-     *
-     * @param inimigoAtual treinador adversário
-     * @return true se realizou uma ação, false se desistiu
-     */
-    public boolean turnoJogador(Treinador inimigoAtual) {
-        String opcao;
-        boolean turnoConcluido = false;
+        System.out.println();
+        System.out.println("------");
+        System.out.println("TURNO " + turno);
+        System.out.println("------");
 
-        while (!turnoConcluido) {
-            System.out.println("==============================");
-            System.out.println("Turno de: " + jogador.getNome());
-            System.out.println("==============================");
+        // Verifica se o pokeSal do jogador está paralizado, se sim, pula o turno.
+        if (jogador.getPokeSall().getStatus() == Status.PARALIZADO) {
+          System.out.println(
+                  "O pokeSal " + jogador.getNomePokeSall() + " está paralizado!, pulou o turno!");
+          prioridade = 2;
+          jogador.getPokeSall().setStatus(Status.NORMAL);
+        }
+        if (prioridade == 1) {
+          do {
 
             do {
-                System.out.println("-----------------------------");
-                System.out.println(
-                        "PokeSall: " + jogador.getNomePokeSall());
-                System.out.println(
-                        "HP: " + jogador.getPokeSall().getHP());
-                System.out.println(
-                        "1--ATAQUES-- 2--MOCHILA-- 3--DESISTIR");
-                System.out.println("-----------------------------");
-
-                opcao = ler.nextLine();
-            } while (!(opcao.equals("1")
-                    || opcao.equals("2")
-                    || opcao.equals("3")));
+              System.out.println();
+              System.out.println("==============================");
+              System.out.println("Turno de: " + jogador.getNome());
+              System.out.println("==============================");
+              System.out.println("-----------------------------");
+              System.out.println("Treinador: " + jogador.getNome());
+              System.out.println("PokeSall: " + jogador.getNomePokeSall());
+              System.out.println("HP: " + String.format("%.1f", jogador.getPokeSall().getHp()));
+              System.out.println("==============================");
+              System.out.println("------------VERSUS------------");
+              System.out.println("==============================");
+              System.out.println("Treinador: " + inimigos.get(nivelTorre).getNome());
+              System.out.println("PokeSall: " + inimigos.get(nivelTorre).getNomePokeSall());
+              System.out.println("HP: "
+                      + String.format("%.1f", inimigos.get(nivelTorre).getPokeSall().getHp()));
+              System.out.println("-----------------------------");
+              System.out.println("1--ATAQUES-- 2--MOCHILA-- 3--DESISTIR");
+              System.out.println("-----------------------------");
+              opcao = ler.nextLine();
+            } while (!(opcao.equals("1") || opcao.equals("2") || opcao.equals("3")));
 
             switch (opcao) {
-                case "1":
-                    do {
-                        jogador.getPokeSall().listarHabilidades();
+              case "1":
+                do {
+                  System.out.println("-----------------------------");
+                  System.out.println("1- Para usar " + jogador.getPokeSall().getHabilidades()[0]);
+                  System.out.println("2- Para usar " + jogador.getPokeSall().getHabilidades()[1]);
+                  System.out.println("3- Para voltar");
+                  opcao = ler.nextLine();
+                } while (!(opcao.equals("1") || opcao.equals("2") || opcao.equals("3")));
 
-                        System.out.println("-----------------------------");
-                        System.out.println("1- Para usar o primeiro ataque");
-                        System.out.println("2- Para usar o segundo ataque");
-                        System.out.println("3- Para voltar");
+                if (opcao.equals("1")) {
+                  calcularAtaque(jogador.getPokeSall().getHabilidades()[0], jogador, inimigoAtual);
+                  acao = false;
+                  prioridade = 2;
+                } else if (opcao.equals("2")) {
+                  calcularAtaque(jogador.getPokeSall().getHabilidades()[1], jogador, inimigoAtual);
+                  acao = false;
+                  prioridade = 2;
+                } else {
+                  acao = true;
+                }
+                break;
 
-                        opcao = ler.nextLine();
-                    } while (!(opcao.equals("1")
-                            || opcao.equals("2")
-                            || opcao.equals("3")));
-
-                    if (opcao.equals("3")) {
-                        break;
+              case "2":
+                do {
+                  int temp = 0;
+                  System.out.println("-----------------------------");
+                  List<Item> itens = jogador.getMochila().getItens();
+                  for (Item item : itens) {
+                    if (item.getQuantidade() > 0) {
+                      temp++;
+                      System.out.println("Digite " + temp + " para usar " + item.getNome() + ": "
+                              + item.getQuantidade());
+                      System.out.println(item.getDescricao());
+                      System.out.println("-----------------------------");
                     }
 
-                    Tipos tipoJogador = jogador.getPokeSall().getTipo();
+                  }
+                  System.out.println("-----------------------------");
+                  System.out.println("0- Para voltar");
+                  opcao = ler.nextLine();
 
-                    if (opcao.equals("1")) {
-                        if (tipoJogador == Tipos.PLANTA) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Folha Buzzer!");
-                            calcularAtaque(
-                                    Habilidades.FOLHA_BUZZER,
-                                    jogador,
-                                    inimigoAtual);
-                        } else if (tipoJogador == Tipos.FOGO) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Hell Beam!");
-                            calcularAtaque(
-                                    Habilidades.HELL_BEAM,
-                                    jogador,
-                                    inimigoAtual);
-                        } else if (tipoJogador == Tipos.AGUA) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Beat Bolha!");
-                            calcularAtaque(
-                                    Habilidades.BEAT_BOLHA,
-                                    jogador,
-                                    inimigoAtual);
-                        }
+                } while (!(opcao.equals("1") || opcao.equals("2") || opcao.equals("3")
+                        || opcao.equals("0")));
+                // Limita a quantidade de poções por batalha em 2.
+                if (quantidadePotBatalha < 2) {
+                  if (opcao.equals("1") && jogador.getMochila().consumirItem("Potion")) {
+                    usarPotion(jogador);
+                    quantidadePotBatalha++;
+                    acao = false;
+                    prioridade = 2;
+                  } else if (opcao.equals("2") && jogador.getMochila().consumirItem("Antidote")) {
+                    usarAntidote(jogador);
+                    quantidadePotBatalha++;
+                    acao = false;
+                    prioridade = 2;
+                  } else if (opcao.equals("3")
+                          && jogador.getMochila().consumirItem("SuperPotion")) {
+                    usarSuperPotion(jogador);
+                    quantidadePotBatalha++;
+                    acao = false;
+                    prioridade = 2;
+                  } else {
+                    acao = true;
+                  }
+                } else {
+                  System.out.println("Limite máximo de 2 itens por batalha atingido!");
+                  acao = true;
+                }
+                break;
 
-                        vida = inimigoAtual.getPokeSall().getHP();
+              case "3":
+                batalhando = false;
+                rodando = false;
+                System.out.println("Você fugiu da batalha!");
+                acao = false;
+                break;
 
-                        System.out.println(
-                                "Causou " + dano + " de dano em "
-                                + inimigoAtual.getNomePokeSall() + "!");
-
-                        inimigoAtual.getPokeSall().setHP(vida - dano);
-
-                    } else if (opcao.equals("2")) {
-                        if (tipoJogador == Tipos.PLANTA) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Gás!");
-
-                            calcularAtaque(
-                                    Habilidades.GAS,
-                                    jogador,
-                                    inimigoAtual);
-
-                            System.out.println(
-                                    inimigoAtual.getNomePokeSall()
-                                    + " foi envenenado!");
-
-                        } else if (tipoJogador == Tipos.FOGO) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Queimar!");
-
-                            calcularAtaque(
-                                    Habilidades.QUEIMAR,
-                                    jogador,
-                                    inimigoAtual);
-
-                            System.out.println(
-                                    inimigoAtual.getNomePokeSall()
-                                    + " está queimando!");
-
-                        } else if (tipoJogador == Tipos.AGUA) {
-                            System.out.println(
-                                    jogador.getNomePokeSall()
-                                    + " usou Água Termal!");
-
-                            calcularAtaque(
-                                    Habilidades.AGUA_TERMAL,
-                                    jogador,
-                                    inimigoAtual);
-
-                            System.out.println(
-                                    inimigoAtual.getNomePokeSall()
-                                    + " foi paralisado!");
-                        }
-                    }
-
-                    return true;
-
-                case "2":
-                    do {
-                        int temp = 0;
-
-                        System.out.println("-----------------------------");
-
-                        for (Item item : jogador.getMochila().itens) {
-                            if (item.getQuantidade() > 0) {
-                                temp++;
-
-                                System.out.println(
-                                        "Digite " + temp
-                                        + " para usar " + item.getNome()
-                                        + ": " + item.getQuantidade());
-
-                                System.out.println(item.getDescricao());
-                                System.out.println(
-                                        "-----------------------------");
-                            }
-                        }
-
-                        System.out.println("-----------------------------");
-                        System.out.println("0- Para voltar");
-
-                        opcao = ler.nextLine();
-
-                    } while (!(opcao.equals("1")
-                            || opcao.equals("2")
-                            || opcao.equals("3")
-                            || opcao.equals("0")));
-
-                    if (opcao.equals("0")) {
-                        break;
-                    }
-
-                    if (opcao.equals("1")) {
-                        usarPotion(jogador);
-                    } else if (opcao.equals("2")) {
-                        usarAntidote(jogador);
-                    } else if (opcao.equals("3")) {
-                        usarSuperPotion(jogador);
-                    }
-
-                    return true;
-
-                case "3":
-                    System.out.println("Você fugiu da batalha!");
-                    return false;
-
-                default:
-                    break;
+              default:
+                System.out.println("Opção inválida!");
             }
+          } while (acao);
         }
-
-        return true;
-    }
-
-    /**
-     * Gerencia a inteligência artificial do turno do inimigo.
-     *
-     * @param inimigoAtual treinador adversário
-     * @param batalhando estado do loop da batalha
-     * @param rodando estado geral do jogo
-     */
-    public void turnoInimigo(
-            Treinador inimigoAtual,
-            boolean batalhando,
-            boolean rodando) {
-
-        if (rodando && batalhando) {
+        // Verifica se o pokeSal do inimigo está paralizado, se sim, pula o turno.
+        if (inimigoAtual.getPokeSall().getStatus() == Status.PARALIZADO) {
+          System.out.println("O pokeSal " + inimigoAtual.getNomePokeSall()
+                  + " está paralizado!, pulou o turno!");
+          prioridade = 1;
+          inimigoAtual.getPokeSall().setStatus(Status.NORMAL);
+        }
+        // Verifica se inimigo morreu antes de ele atacar
+        int resultado = verificarVitoria();
+        if (resultado != 0) {
+          batalhando = false;
+          if (resultado == 1) {
+            nivelTorre++;
+            jogador.getPokeSall().setHp(jogador.getPokeSall().getHpBase());
+            jogador.getPokeSall().setStatus(Status.NORMAL);
+            telaDeRecompensas();
+          }
+          if (resultado == 2) {
+            rodando = false;
+            continue;
+          }
+        }
+        if (prioridade == 2) {
+          if (rodando && batalhando) {
             dano = 0;
-
             System.out.println();
             System.out.println("Turno de " + inimigoAtual.getNome());
-            System.out.println();
+            System.out.println("");
 
             int temp = rand.nextInt(1, 3);
-            Tipos tipoInimigo = inimigoAtual.getPokeSall().getTipo();
 
-            vida = jogador.getPokeSall().getHP();
+            switch (temp) {
+              case 1:
+                calcularAtaque(inimigoAtual.getPokeSall().getHabilidades()[0], inimigoAtual,
+                        jogador);
 
-            if (tipoInimigo == Tipos.FOGO) {
-                if (temp == 1) {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Hell Beam!");
+                prioridade = 1;
+                break;
 
-                    calcularAtaque(
-                            Habilidades.HELL_BEAM,
-                            inimigoAtual,
-                            jogador);
+              case 2:
 
-                    System.out.println(
-                            "Causou " + dano + " de dano em "
-                            + jogador.getNomePokeSall() + "!");
+                calcularAtaque(inimigoAtual.getPokeSall().getHabilidades()[1], inimigoAtual,
+                        jogador);
+                prioridade = 1;
+                break;
 
-                    jogador.getPokeSall().setHP(vida - dano);
-                } else {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Queimar!");
-
-                    calcularAtaque(
-                            Habilidades.QUEIMAR,
-                            inimigoAtual,
-                            jogador);
-                }
-
-            } else if (tipoInimigo == Tipos.PLANTA) {
-                if (temp == 1) {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Folha Buzzer!");
-
-                    calcularAtaque(
-                            Habilidades.FOLHA_BUZZER,
-                            inimigoAtual,
-                            jogador);
-
-                    System.out.println(
-                            "Causou " + dano + " de dano em "
-                            + jogador.getNomePokeSall() + "!");
-
-                    jogador.getPokeSall().setHP(vida - dano);
-                } else {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Gás!");
-
-                    calcularAtaque(
-                            Habilidades.GAS,
-                            inimigoAtual,
-                            jogador);
-                }
-
-            } else if (tipoInimigo == Tipos.AGUA) {
-                if (temp == 1) {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Beat Bolha!");
-
-                    calcularAtaque(
-                            Habilidades.BEAT_BOLHA,
-                            inimigoAtual,
-                            jogador);
-
-                    System.out.println(
-                            "Causou " + dano + " de dano em "
-                            + jogador.getNomePokeSall() + "!");
-
-                    jogador.getPokeSall().setHP(vida - dano);
-                } else {
-                    System.out.println(
-                            inimigoAtual.getNomePokeSall()
-                            + " usou Água Termal!");
-
-                    calcularAtaque(
-                            Habilidades.AGUA_TERMAL,
-                            inimigoAtual,
-                            jogador);
-                }
+              default:
+                break;
             }
+
+          }
         }
+        verificarStatus(players); // Verifica o status dos jogadores no final do turno
+        aplicarEfeitosTerreno(players); // Aplica cura de terreno no final do turno
+
+        if (resultado == 0) {
+          resultado = verificarVitoria();
+          if (resultado == 1) { // Jogador Venceu
+            batalhando = false;
+            // Recupera toda a vida ao subir a torre.
+            jogador.getPokeSall().setHp(jogador.getPokeSall().getHpBase());
+            jogador.getPokeSall().setStatus(Status.NORMAL);
+            telaDeRecompensas();
+          } else if (resultado == 2) { // Jogador Perdeu
+            batalhando = false;
+            rodando = false;
+          }
+        }
+      }
     }
 
-    /**
-     * Limpa a tela do terminal.
-     */
-    public void limparTela() {
-        for (int l = 0; l < 20; l++) {
-            System.out.println();
-        }
+    if (nivelTorre >= inimigos.size() && jogador.getPokeSall().getHp() > 0) {
+      System.out.println("Parabéns! Você derrotou todos os inimigos da torre!");
+    }
+  }
+
+  /**
+   * Limpa o terminal com um for loop e o System.out.println vázio.
+   */
+
+  public void limparTela() {
+    for (int l = 0; l < 20; l++) {
+      System.out.println();
+    }
+  }
+
+  /**
+   * Método responsável por calcular todo o dano causo por uma habilidade.
+   *
+   * @param habilidade, um enum com o nome da habilidade utilizada.
+   *
+   * @param atacante, o objeto do treinador que está atacando.
+   *
+   * @param alvo, o objeto do treinador que está sendo atacado..
+   */
+
+  public void calcularAtaque(Habilidades habilidade, Treinador atacante, Treinador alvo) {
+    dano = 0;
+    double multiplicador;
+    // Multiplicadores de dano para cada vantagem e desvantagem
+    if (atacante.getPokeSall().getTipo() == Tipos.PLANTA
+            && alvo.getPokeSall().getTipo() == Tipos.AGUA) {
+
+      multiplicador = 2;
+
+    } else if (atacante.getPokeSall().getTipo() == Tipos.AGUA
+            && alvo.getPokeSall().getTipo() == Tipos.FOGO) {
+
+      multiplicador = 2;
+
+    } else if (atacante.getPokeSall().getTipo() == Tipos.FOGO
+            && alvo.getPokeSall().getTipo() == Tipos.PLANTA) {
+
+      multiplicador = 2;
+
+    } else if (atacante.getPokeSall().getTipo() == alvo.getPokeSall().getTipo()) {
+
+      multiplicador = 1;
+
+    } else {
+      multiplicador = 0.5;
     }
 
-    /**
-     * Calcula o dano e aplica os efeitos das habilidades.
-     * Exibe os buffs ativados pelos terrenos.
-     *
-     * @param habilidade habilidade utilizada
-     * @param atacante treinador atacante
-     * @param alvo treinador alvo
-     */
-    public void calcularAtaque(
-            Habilidades habilidade,
-            Treinador atacante,
-            Treinador alvo) {
+    if (habilidade == Habilidades.FOLHA_BUZZER) {
 
-        double atkModificado = atacante.getPokeSall().getATK();
-        dano = 0;
+      dano = calcularDefesa((60 + atacante.getPokeSall().getAtk()) * multiplicador, alvo);
+      vida = alvo.getPokeSall().getHp();
+      alvo.getPokeSall().setHp(vida - dano);
+      System.out.println(atacante.getNomePokeSall() + " usou Folha Buzzer!");
+      System.out.println("Deu " + String.format("%.1f", dano) + " de dano!");
 
-        if (terreno == TERRENOS.ASFALTO_QUENTE) {
-            atkModificado *= 1.15;
-
-            System.out.println(
-                    "[TERRENO] Asfalto Quente aumentou o ataque de "
-                    + atacante.getNomePokeSall() + " em 15%!");
+    } else if (habilidade == Habilidades.GAS) {
+      System.out.println(atacante.getNomePokeSall() + " usou Gas!");
+      if (alvo.isNpc()) {
+        if (acumuloVenenoI < 3) {
+          acumuloVenenoI++;
         }
 
-        if (habilidade == Habilidades.FOLHA_BUZZER) {
-            if (alvo.getPokeSall().getTipo() == Tipos.AGUA) {
-                dano = calcularDefesa(
-                        (60 + atkModificado) * 2,
-                        alvo);
-            } else if (alvo.getPokeSall().getTipo() == Tipos.FOGO) {
-                dano = calcularDefesa(
-                        (60 + atkModificado) * 0.5,
-                        alvo);
-            } else {
-                dano = calcularDefesa(
-                        60 + atkModificado,
-                        alvo);
-            }
+      } else {
+        if (acumuloVenenoJ < 3) {
+          acumuloVenenoJ++;
         }
+      }
 
-        if (habilidade == Habilidades.GAS) {
-            if (alvo.isNpc()) {
-                if (acumuloVenenoI < 3) {
-                    acumuloVenenoI++;
-                }
-            } else {
-                if (acumuloVenenoJ < 3) {
-                    acumuloVenenoJ++;
-                }
-            }
+      alvo.getPokeSall().setStatus(Status.ENVENENADO);
 
-            alvo.getPokeSall().setStatus(Status.ENVENENADO);
-        }
+    } else if (habilidade == Habilidades.HELL_BEAM) {
 
-        if (habilidade == Habilidades.HELL_BEAM) {
-            if (alvo.getPokeSall().getTipo() == Tipos.PLANTA) {
-                dano = calcularDefesa(
-                        (75 + atkModificado) * 2,
-                        alvo);
-            } else if (alvo.getPokeSall().getTipo() == Tipos.AGUA) {
-                dano = calcularDefesa(
-                        (75 + atkModificado) * 0.5,
-                        alvo);
-            } else {
-                dano = calcularDefesa(
-                        75 + atkModificado,
-                        alvo);
-            }
-        }
+      dano = calcularDefesa((75 + atacante.getPokeSall().getAtk()) * multiplicador, alvo);
+      vida = alvo.getPokeSall().getHp();
+      alvo.getPokeSall().setHp(vida - dano);
+      System.out.println(atacante.getNomePokeSall() + " usou Hell Beam!");
+      System.out.println("Deu " + String.format("%.1f", dano) + " de dano!");
 
-        if (habilidade == Habilidades.QUEIMAR) {
-            if (alvo.isNpc()) {
-                turnosFogoI = 3;
-            } else {
-                turnosFogoJ = 3;
-            }
+    } else if (habilidade == Habilidades.QUEIMAR) {
+      System.out.println(atacante.getNomePokeSall() + " usou queimar!");
+      if (alvo.isNpc()) {
+        turnosFogoI = 3;
+      } else {
+        turnosFogoJ = 3;
+      }
 
-            alvo.getPokeSall().setStatus(Status.QUEIMANDO);
-        }
+      alvo.getPokeSall().setStatus(Status.QUEIMANDO);
 
-        if (habilidade == Habilidades.AGUA_TERMAL) {
-            alvo.getPokeSall().setStatus(Status.PARALIZADO);
-        }
-
-        if (habilidade == Habilidades.BEAT_BOLHA) {
-            if (alvo.getPokeSall().getTipo() == Tipos.FOGO) {
-                dano = calcularDefesa(
-                        (65 + atkModificado) * 2,
-                        alvo);
-            } else if (alvo.getPokeSall().getTipo() == Tipos.PLANTA) {
-                dano = calcularDefesa(
-                        (65 + atkModificado) * 0.5,
-                        alvo);
-            } else {
-                dano = calcularDefesa(
-                        65 + atkModificado,
-                        alvo);
-            }
-        }
-
-        if (terreno == TERRENOS.POCA_DE_CHUVA
-                && atacante.getPokeSall().getTipo() == Tipos.AGUA) {
-
-            dano *= 1.10;
-
-            System.out.println(
-                    "[TERRENO] Poça de Chuva aumentou o dano "
-                    + "do ataque de água de "
-                    + atacante.getNomePokeSall() + " em 10%!");
-        }
+    } else if (habilidade == Habilidades.AGUA_TERMAL) {
+      System.out.println(atacante.getNomePokeSall() + " usou Agua Termal!");
+      alvo.getPokeSall().setStatus(Status.PARALIZADO);
+    } else if (habilidade == Habilidades.BEAT_BOLHA) {
+      dano = calcularDefesa((65 + atacante.getPokeSall().getAtk()) * multiplicador, alvo);
+      vida = alvo.getPokeSall().getHp();
+      alvo.getPokeSall().setHp(vida - dano);
+      System.out.println(atacante.getNomePokeSall() + " usou Beat Bolha");
+      System.out.println("Deu " + String.format("%.1f", dano) + " de dano!");
     }
 
-    /**
-     * Calcula o dano reduzido pela defesa do alvo.
-     *
-     * @param dano dano pré-calculado
-     * @param alvo treinador defensor
-     * @return dano final mitigado
-     */
-    public double calcularDefesa(double dano, Treinador alvo) {
-        return dano * (
-                ESCALA_DEFESA
-                / (ESCALA_DEFESA + alvo.getPokeSall().getDEF()));
+    // BUFF DE TERRENOS
+    if (dano > 0) {
+      if (terrenoAtual == Terrenos.ASFALTO_QUENTE
+              && atacante.getPokeSall().getTipo() == Tipos.FOGO) {
+
+        dano *= 1.20; // 20% de bônus de dano
+
+        System.out.println("O Asfalto Quente fortaleceu o ataque de "
+                + atacante.getPokeSall().getNome() + "!");
+
+      } else if (terrenoAtual == Terrenos.POCA_DE_CHUVA
+              && atacante.getPokeSall().getTipo() == Tipos.AGUA) {
+
+        dano *= 1.20; // 20% de bônus de dano
+        System.out.println(
+                "A Poça de Chuva fortaleceu o ataque de " + atacante.getPokeSall().getNome() + "!");
+
+      }
     }
+  }
 
-    /**
-     * Aplica efeitos passivos ao fim do turno.
-     *
-     * @param players lista com os dois combatentes
-     */
-    public void aplicarEfeitosTerreno(ArrayList<Treinador> players) {
-        if (terreno == TERRENOS.CANTEIRO_CENTRAL) {
-            for (Treinador treinador : players) {
-                if (treinador.getPokeSall().getTipo() == Tipos.PLANTA
-                        && treinador.getPokeSall().getHP() > 0) {
+  /**
+   * Método que calcula o dano resultante da defesa base do pokeSal alvo e o dano causado pelo
+   * atacante.
+   *
+   * @param danoBase, recebe o calculo de dano do pokeSal atacante com todos os calculos aplicados.
+   *
+   * @param alvo, recebe o objeto do treinador inimigo para calcular a defesa base do seu pokeSal.
+   */
+  public double calcularDefesa(double danoBase, Treinador alvo) {
+    return danoBase * (escalaDefesa / (escalaDefesa + alvo.getPokeSall().getDef()));
+  }
 
-                    double curaTerreno =
-                            treinador.getPokeSall().getHPbase() * 0.05;
-
-                    double vidaAtual =
-                            treinador.getPokeSall().getHP();
-
-                    double vidaMax =
-                            treinador.getPokeSall().getHPbase();
-
-                    if (vidaAtual + curaTerreno > vidaMax) {
-                        treinador.getPokeSall().setHP(vidaMax);
-                    } else {
-                        treinador.getPokeSall().setHP(
-                                vidaAtual + curaTerreno);
-                    }
-
-                    System.out.println(
-                            "[TERRENO] Canteiro Central curou "
-                            + curaTerreno + " de HP de "
-                            + treinador.getPokeSall().getNome() + "!");
-                }
-            }
-        }
+  /**
+   * Método responsável por verificar o status dos pokeSals de ambos os treinadores.
+   *
+   * @param players, recebe um arrayList de players contendo ambos os treinadores.
+   */
+  public void verificarStatus(ArrayList<Treinador> players) {
+    for (Treinador treinador : players) {
+      if (treinador.getPokeSall().getStatus() == Status.ENVENENADO) {
+        System.out.println("O " + treinador.getPokeSall().getNome() + " está envenenado!");
+      }
+      if (treinador.getPokeSall().getStatus() == Status.QUEIMANDO) {
+        System.out.println("O " + treinador.getPokeSall().getNome() + " está queimando!");
+      }
+      if (treinador.getPokeSall().getStatus() == Status.PARALIZADO) {
+        System.out.println("O " + treinador.getPokeSall().getNome() + " está paralizado!");
+      }
     }
+    calcularDanoContinuo(players);
+  }
 
-    /**
-     * Informa o status atual dos combatentes e calcula danos contínuos.
-     *
-     * @param players lista com os dois combatentes
-     */
-    public void verificarStatus(ArrayList<Treinador> players) {
-        for (Treinador treinador : players) {
-            if (treinador.getPokeSall().getStatus() == Status.ENVENENADO) {
-                System.out.println(
-                        "O " + treinador.getPokeSall().getNome()
-                        + " está envenenado!");
-            }
+  /**
+   * Método que calcula dano contínuo de ambos os PokeSals(veneno e queimadura).
+   *
+   * @param players, recebe um arrayList contendo ambos os Treinadores e seus pokeSals.
+   */
+  public void calcularDanoContinuo(ArrayList<Treinador> players) {
+    for (Treinador treinador : players) {
+      double vidaAtual = treinador.getPokeSall().getHp();
 
-            if (treinador.getPokeSall().getStatus() == Status.QUEIMANDO) {
-                System.out.println(
-                        "O " + treinador.getPokeSall().getNome()
-                        + " está queimando!");
-            }
-
-            if (treinador.getPokeSall().getStatus() == Status.PARALIZADO) {
-                System.out.println(
-                        "O " + treinador.getPokeSall().getNome()
-                        + " está paralisado!");
-            }
-        }
-
-        calcularDanoContinuo(players);
-    }
-
-    /**
-     * Calcula e aplica os danos contínuos dos status.
-     *
-     * @param players lista com os dois combatentes
-     */
-    public void calcularDanoContinuo(ArrayList<Treinador> players) {
-        for (Treinador treinador : players) {
-            double vidaAtual = treinador.getPokeSall().getHP();
-
-            if (treinador.getPokeSall().getStatus() == Status.ENVENENADO) {
-                if (treinador.isNpc()) {
-                    dano = (acumuloVenenoI * 0.1)
-                            * treinador.getPokeSall().getHPbase();
-                } else {
-                    dano = (acumuloVenenoJ * 0.1)
-                            * treinador.getPokeSall().getHPbase();
-                }
-
-                treinador.getPokeSall().setHP(vidaAtual - dano);
-
-                System.out.println(
-                        treinador.getPokeSall().getNome()
-                        + " tomou " + dano + " de veneno!");
-
-                vidaAtual = treinador.getPokeSall().getHP();
-            }
-
-            if (treinador.getPokeSall().getStatus() == Status.QUEIMANDO) {
-                if (treinador.isNpc()) {
-                    turnosFogoI--;
-                } else {
-                    turnosFogoJ--;
-                }
-
-                dano = 30;
-
-                treinador.getPokeSall().setHP(vidaAtual - dano);
-
-                System.out.println(
-                        treinador.getPokeSall().getNome()
-                        + " tomou " + dano + " de queimadura!");
-
-                if ((turnosFogoI <= 0 && treinador.isNpc())
-                        || (turnosFogoJ <= 0 && !treinador.isNpc())) {
-
-                    treinador.getPokeSall().setStatus(Status.NORMAL);
-
-                    System.out.println(
-                            treinador.getPokeSall().getNome()
-                            + " não está mais queimando!");
-                }
-            }
-        }
-    }
-
-    /**
-     * Sorteia e entrega um item ao jogador.
-     *
-     * @param jogador treinador que receberá o item
-     */
-    public void droparItem(Treinador jogador) {
-        int temp = rand.nextInt(0, recompensas.length);
-        jogador.getMochila().addItem(recompensas[temp]);
-    }
-
-    /**
-     * Usa uma Potion e recupera 30% do HP máximo.
-     *
-     * @param treinador treinador que usará o item
-     */
-    public void usarPotion(Treinador treinador) {
-        double vidaAtual = treinador.getPokeSall().getHP();
-        double vidaBase = treinador.getPokeSall().getHPbase();
-
-        treinador.getMochila().consumirItem("Potion");
-
-        cura = 0.3 * vidaBase;
-
-        if (vidaAtual + cura > vidaBase) {
-            treinador.getPokeSall().setHP(vidaBase);
+      if (treinador.getPokeSall().getStatus() == Status.ENVENENADO) {
+        if (treinador.isNpc()) {
+          dano = (acumuloVenenoI * 0.1) * treinador.getPokeSall().getHpBase();
         } else {
-            treinador.getPokeSall().setHP(cura + vidaAtual);
+          dano = (acumuloVenenoJ * 0.1) * treinador.getPokeSall().getHpBase();
         }
-    }
+        treinador.getPokeSall().setHp(vidaAtual - dano);
+        System.out.println(treinador.getPokeSall().getNome() + " tomou "
+                + String.format("%.1f", dano) + " dano de veneno!");
+        vidaAtual = treinador.getPokeSall().getHp();
+      }
 
-    /**
-     * Usa uma Super Potion e recupera 50% do HP máximo.
-     *
-     * @param treinador treinador que usará o item
-     */
-    public void usarSuperPotion(Treinador treinador) {
-        double vidaAtual = treinador.getPokeSall().getHP();
-        double vidaBase = treinador.getPokeSall().getHPbase();
-
-        treinador.getMochila().consumirItem("SuperPotion");
-
-        cura = 0.5 * vidaBase;
-
-        if (vidaAtual + cura > vidaBase) {
-            treinador.getPokeSall().setHP(vidaBase);
+      if (treinador.getPokeSall().getStatus() == Status.QUEIMANDO) {
+        if (treinador.isNpc()) {
+          turnosFogoI--;
         } else {
-            treinador.getPokeSall().setHP(cura + vidaAtual);
+          turnosFogoJ--;
         }
+
+        dano = 30;
+        treinador.getPokeSall().setHp(vidaAtual - dano);
+        System.out.println(
+                treinador.getPokeSall().getNome() + " tomou " + dano + " dano de queimadura!");
+
+        if ((turnosFogoI <= 0 && treinador.isNpc() || turnosFogoJ <= 0 && !treinador.isNpc())
+                && treinador.getPokeSall().getStatus() == Status.QUEIMANDO) {
+          treinador.getPokeSall().setStatus(Status.NORMAL);
+          System.out.println(treinador.getPokeSall().getNome() + " não está mais queimando!");
+        }
+
+      }
+
     }
+  }
 
-    /**
-     * Usa um Antidote e recupera 50% do HP máximo.
-     *
-     * @param treinador treinador que usará o item
-     */
-    public void usarAntidote(Treinador treinador) {
-        double vidaAtual = treinador.getPokeSall().getHP();
-        double vidaBase = treinador.getPokeSall().getHPbase();
+  /**
+   * Método responsável por aplicar o efeito dos terrenos no fim do turno(caso esse seja o efeito do
+   * terreno).
+   *
+   * @param players, recebe um ArrayList com ambos os treinadores para verificar o tipo dos seus
+   *     pokesals, assim, aplicando os devidos efeitos.
+   */
+  public void aplicarEfeitosTerreno(ArrayList<Treinador> players) {
+    if (terrenoAtual == Terrenos.CANTEIRO_CENTRAL) {
+      for (Treinador treinador : players) {
+        if (treinador.getPokeSall().getTipo() == Tipos.PLANTA) {
+          double hpAtual = treinador.getPokeSall().getHp();
+          double hpMax = treinador.getPokeSall().getHpBase();
 
-        treinador.getMochila().consumirItem("Antidote");
-
-        cura = 0.5 * vidaBase;
-
-        treinador.getPokeSall().setStatus(Status.NORMAL);
-
-        if (vidaAtual + cura > vidaBase) {
-            treinador.getPokeSall().setHP(vidaBase);
-        } else {
-            treinador.getPokeSall().setHP(cura + vidaAtual);
+          // Só cura se ele estiver vivo e não estiver com a vida cheia
+          if (hpAtual > 0 && hpAtual < hpMax) {
+            double curaTerreno = hpMax * 0.05; // 5% do HP máximo
+            if (hpAtual + curaTerreno > hpMax) {
+              treinador.getPokeSall().setHp(hpMax);
+            } else {
+              treinador.getPokeSall().setHp(hpAtual + curaTerreno);
+            }
+            System.out.println("O Canteiro Central curou " + String.format("%.1f", curaTerreno)
+                    + " de HP do " + treinador.getPokeSall().getNome() + "!");
+          }
         }
+      }
     }
+  }
 
-    /**
-     * Verifica se algum participante foi derrotado na batalha.
-     *
-     * @param jogador treinador do jogador
-     * @param inimigo treinador adversário
-     * @return 1 para vitória, 2 para derrota e 0 para batalha em andamento
-     */
-    public int verificarVitoria(
-            Treinador jogador,
-            Treinador inimigo) {
+  /**
+   * Método responsável por usar o item Potion.
+   *
+   * @param treinador, recebe o objeto do treinador para calcular a cura provida devidamente.
+   */
+  public void usarPotion(Treinador treinador) {
+    double vidaAtual = treinador.getPokeSall().getHp();
+    double vidaBase = treinador.getPokeSall().getHpBase();
+    cura = 0.3 * vidaBase;
 
-        if (jogador.getPokeSall().getHP() <= 0) {
-            System.out.println(
-                    "O jogador " + jogador.getNome()
-                    + " perdeu a batalha!");
-            return 2;
-        }
-
-        if (inimigo.getPokeSall().getHP() <= 0) {
-            System.out.println(
-                    "O jogador " + jogador.getNome()
-                    + " venceu a batalha!");
-
-            droparItem(jogador);
-            return 1;
-        }
-
-        return 0;
+    if ((vidaAtual + cura) > vidaBase) {
+      treinador.getPokeSall().setHp(vidaBase);
+      System.out.println(treinador.getNomePokeSall() + " se curou totalmente!");
+    } else {
+      treinador.getPokeSall().setHp(cura + vidaAtual);
+      System.out.println("Potion curou " + treinador.getNomePokeSall() + " em " + cura);
     }
+  }
+
+  /**
+   * Método responsável por usar o item SuperPotion.
+   *
+   * @param treinador, recebe o objeto do treinador para calcular a cura provida devidamente.
+   */
+  public void usarSuperPotion(Treinador treinador) {
+    double vidaAtual = treinador.getPokeSall().getHp();
+    double vidaBase = treinador.getPokeSall().getHpBase();
+    cura = 0.5 * vidaBase;
+    treinador.getPokeSall().setStatus(Status.NORMAL);
+    if ((vidaAtual + cura) > vidaBase) {
+      treinador.getPokeSall().setHp(vidaBase);
+      System.out.println(treinador.getNomePokeSall() + " se curou totalmente "
+              + "e removeu todos os efeitos negativos!");
+    } else {
+      treinador.getPokeSall().setHp(cura + vidaAtual);
+      System.out.println("SuperPotion curou " + treinador.getNomePokeSall() + " em " + cura
+              + " e removeu efeitos negativos!");
+    }
+  }
+
+  /**
+   * Método responsável por usar o item Antidote.
+   *
+   * @param treinador, recebe o objeto do treinador para remover todos os status negativos do
+   *        pokesal.
+   */
+  public void usarAntidote(Treinador treinador) {
+    double vidaAtual = treinador.getPokeSall().getHp();
+    double vidaBase = treinador.getPokeSall().getHpBase();
+    cura = 0.5 * vidaBase;
+    treinador.getPokeSall().setStatus(Status.NORMAL);
+    System.out.println("O pokeSal curou de todos os efeitos negativos!");
+  }
+
+  /**
+   * Método responsável por gerar uma recompensa aleatória entre 3 possíveis de um vetor de 3
+   * Strings.
+   *
+   * @return, retorna a recompensa gerada aleatoriamente.
+   */
+
+  public String recompensaVitoria() {
+    String[] recompensas = { "Potion", "SuperPotion", "Antidote" };
+
+    String recompensa = recompensas[rand.nextInt(recompensas.length)];
+
+    return recompensa;
+  }
+
+  /**
+   * Métod responsável por adicionar o item gerada aleatoriamente a mochila do jogador e informalo o
+   * item que ele ganhou.
+   */
+  public void telaDeRecompensas() {
+    String recompensa = recompensaVitoria();
+    jogador.getMochila().addItem(recompensa);
+    System.out.println("Você derrotou " + inimigoAtual.getNome() + "!");
+    System.out.println("Sua recompensa é: " + recompensa);
+    System.out.println();
+    System.out.println("------------------------------");
+    System.out.println("PRESSIONE ENTER PARA CONTINUAR!");
+    System.out.println("------------------------------");
+    ler.nextLine();
+  }
+
+  /**
+   * Método responsável por verificar a vitória ou derrota do jogador.
+   */
+
+  public int verificarVitoria() {
+    if (jogador.getPokeSall().getHp() <= 0) {
+      System.out.println("O jogador " + jogador.getNome() + " perdeu a batalha!");
+      return 2;
+    }
+    if (inimigoAtual.getPokeSall().getHp() <= 0) {
+      System.out.println("O jogador " + jogador.getNome() + " venceu a batalha!");
+      return 1;
+    }
+    return 0; // Jogo continua
+  }
 }
-
