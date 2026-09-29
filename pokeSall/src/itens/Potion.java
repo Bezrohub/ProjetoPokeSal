@@ -1,10 +1,18 @@
 package itens;
 
-import pokeSall.PokeSall;
+import pokesall.PokeSall;
 
-public class Potion extends Item{
+/**
+ * Classe que herda da classe abstrata Item.
+ */
 
-  public Potion(){
-        super("Potion", "Cura 30% do HP");
-    }
+public class Potion extends Item {
+
+  /**
+   * Construtor da classe, chamando o construtor da super classe e passando seus atributos.
+   */
+
+  public Potion() {
+    super("Potion", "Cura 30% do HP");
+  }
 }
