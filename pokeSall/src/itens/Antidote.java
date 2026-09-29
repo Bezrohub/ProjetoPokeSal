@@ -1,12 +1,20 @@
 package itens;
 
-import pokeSall.PokeSall;
-import pokeSall.Status;
+import pokesall.PokeSall;
+import pokesall.Status;
 
-public class Antidote extends Item{
-    
-  public Antidote(){
-        super("Antidote", "Retira todos os efeitos negativos");
-    }
+/**
+ * Classe que herda da classe abstrata Item.
+ */
+
+public class Antidote extends Item {
+
+  /**
+   * Construtor da classe, chamando o construtor da super classe e passando seus atributos.
+   */
+
+  public Antidote() {
+    super("Antidote", "Retira todos os efeitos negativos");
+  }
 
 }
