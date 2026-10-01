@@ -32,7 +32,6 @@ public class Game {
   private int nivelTorre = 0;
   private int turno = 0;
   private double dano;
-  private double vida;
   private double cura;
   private int itensUsadosNaBatalha = 0;
   private static final double escalaDefesa = 100;
