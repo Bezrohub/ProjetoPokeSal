@@ -27,9 +27,6 @@ public class Game {
   // Todos com J no final é o jogador, todos com I é o inimigo.
   private int acumuloVenenoJ;
   private int acumuloVenenoI;
-  private int turnosVeneno;
-  private int turnosParalizadoJ;
-  private int turnosParalizadoI;
   private int turnosFogoJ;
   private int turnosFogoI;
   private int nivelTorre = 0;
