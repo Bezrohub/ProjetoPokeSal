@@ -37,7 +37,6 @@ public class Game {
   private double dano;
   private double vida;
   private double cura;
-  private int acao = 0;
   private int itensUsadosNaBatalha = 0;
   private static final double escalaDefesa = 100;
   private Terrenos terrenoAtual; // Variável para guardar o terreno da partida
@@ -674,9 +673,6 @@ public class Game {
    *        pokesal.
    */
   public void usarAntidote(Treinador treinador) {
-    double vidaAtual = treinador.getPokeSall().getHp();
-    double vidaBase = treinador.getPokeSall().getHpBase();
-    cura = 0.5 * vidaBase;
     treinador.getPokeSall().setStatus(Status.NORMAL);
     System.out.println("O pokeSal curou de todos os efeitos negativos!");
   }
