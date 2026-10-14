@@ -1,0 +1,1 @@
+Nenhuma ferramenta de Inteligência Artificial foi utilizada para o desenvolvimento deste projeto,
